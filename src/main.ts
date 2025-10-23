@@ -23,9 +23,16 @@ import '@fontsource/roboto/500-italic.css'
 import '@fontsource/roboto/700-italic.css'
 import '@fontsource/roboto/900-italic.css'
 
+import { pt, en } from 'vuetify/locale'
+
 const vuetify = createVuetify({
   components,
   directives,
+  locale: {
+    locale: 'pt',
+    fallback: 'en',
+    messages: { pt, en },
+  },
 })
 
 const app = createApp(App)
