@@ -31,13 +31,12 @@
               >></v-btn>
             </div>
 
-            <!-- Date Picker -->
             <v-date-picker
               v-model="dataSelecionada"
               color="amber-darken-2"
               elevation="0"
-              :min="hoje"
-              :max="limite"
+              :min="hojeISO"
+              :max="limiteISO"
               show-adjacent-months
               locale="pt"
               :month="mesAtual"
@@ -64,14 +63,27 @@
                 md="4"
               >
                 <v-btn
-                  :color="horaSelecionada === hora ? 'amber-darken-2' : 'grey-lighten-3'"
-                  :variant="horaSelecionada === hora ? 'flat' : 'tonal'"
                   block
                   rounded="lg"
-                  @click="horaSelecionada = hora"
+                  :disabled="horariosOcupados.includes(hora)"
+                  :color="
+                    horariosOcupados.includes(hora)
+                      ? 'grey-lighten-1'
+                      : horaSelecionada === hora
+                      ? 'amber-darken-2'
+                      : 'grey-lighten-3'
+                  "
+                  :variant="horaSelecionada === hora ? 'flat' : 'tonal'"
+                  @click="!horariosOcupados.includes(hora) && (horaSelecionada = hora)"
                 >
                   <span
-                    :class="horaSelecionada === hora ? 'text-white' : 'text-grey-darken-3'"
+                    :class="
+                      horariosOcupados.includes(hora)
+                        ? 'text-grey-darken-2'
+                        : horaSelecionada === hora
+                        ? 'text-white'
+                        : 'text-grey-darken-3'
+                    "
                   >
                     {{ hora }}
                   </span>
@@ -103,14 +115,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+import axios from 'axios'
 
-const hoje = new Date().toISOString().split('T')[0]
-const limite = new Date(new Date().getFullYear() + 1, 11, 31).toISOString().split('T')[0]
+const hoje = new Date()
+hoje.setHours(0, 0, 0, 0)
+const hojeISO = hoje.toISOString().split('T')[0]
 
-const dataSelecionada = ref(hoje)
+const limite = new Date(new Date().getFullYear() + 1, 11, 31)
+limite.setHours(23, 59, 59, 999)
+const limiteISO = limite.toISOString().split('T')[0]
+
+const dataSelecionada = ref(hojeISO)
 const horaSelecionada = ref(null)
 const mensagemConfirmacao = ref('')
+const horariosOcupados = ref([])
 
 const data = new Date()
 const mesAtual = ref(data.getMonth())
@@ -130,6 +149,12 @@ const horarios = [
   '16:00', '16:30', '17:00', '17:30',
 ]
 
+watch([mesAtual, anoAtual, dataSelecionada], ([novoMes, novoAno, novaData], [antMes, antAno, antData]) => {
+  if (novoMes !== antMes || novoAno !== antAno || novaData !== antData) {
+    enviarMesParaAPI(novaData)
+  }
+})
+
 function confirmarAgendamento() {
   mensagemConfirmacao.value = `✅ Agendamento confirmado para ${dataSelecionada.value.split('-').reverse().join('/')} às ${horaSelecionada.value}.`
 }
@@ -148,6 +173,23 @@ function mudarMes(direcao) {
 
   mesAtual.value = novoMes
   anoAtual.value = novoAno
+}
+
+async function enviarMesParaAPI(data) {
+  try {
+    const body = { data }
+    const response = await axios.post(
+      import.meta.env.VITE_DEFAULT_API_LINK + '/agendamento/horario',
+      body
+    )
+
+    const rows = response.data?.rows || []
+    horariosOcupados.value = rows.map(r => r.tHora.slice(0, 5))
+
+    console.log('✅ Dados recebidos:', horariosOcupados.value)
+  } catch (error) {
+    console.error('❌ Erro ao enviar data para API:', error)
+  }
 }
 </script>
 
