@@ -34,7 +34,7 @@ function btnLogarClick() {
     .then((response) => {
       localStorage.setItem('jwtToken', response.data.token)
 
-      window.location.href = '/'
+      window.location.href = '/lista_agendamento'
     })
     .catch((error) => {
       console.log(error)

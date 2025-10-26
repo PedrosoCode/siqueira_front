@@ -11,7 +11,7 @@
             Estilo, tradição e cuidado em cada corte.  
             Sua melhor versão começa aqui.
           </p>
-          <v-btn color="amber-darken-2" size="large" rounded>
+          <v-btn @click="$router.push('agendamento')" color="amber-darken-2" size="large" rounded>
             Agendar agora
           </v-btn>
         </v-col>
@@ -74,7 +74,7 @@
       <h2 class="text-h4 font-weight-bold mb-6">Entre em contato</h2>
       <p class="text-grey-lighten-1 mb-4">Rua Principal, 123 - Centro, Cidade/UF</p>
       <p class="text-grey-lighten-1 mb-6">(11) 99999-9999 | contato@siqueirabarbearia.com</p>
-      <v-btn color="amber-darken-2" size="large" rounded>
+      <v-btn @click="$router.push('agendamento')" color="amber-darken-2" size="large" rounded>
         Agendar horário
       </v-btn>
     </v-container>
